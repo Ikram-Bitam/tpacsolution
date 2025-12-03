@@ -2,36 +2,24 @@ import time
 import sys
 import os
 
-# Changer le répertoire courant vers celui où se trouve le script. 
-# Cela évite les erreurs "file not found" lorsque vous lisez ou écrivez des fichiers.
+# Changer le répertoire courant vers celui où se trouve le script.
 os.chdir(os.path.dirname(__file__))
 
 #############################################################################################################################
 # QUESTION 1 – Lecture du fichier
-# Écrire une fonction Python permettant de lire les valeurs entières du fichier valeurs_aleatoires.txt
-# La lecture doit se faire à l’aide d’une liste, en convertissant chaque ligne en entier.
 #############################################################################################################################
 
 def read_file(file_name):
-    # Ouvre le fichier en mode lecture 'r'
     file = open(file_name, 'r')
-    values = []   # Liste qui va contenir les entiers du fichier
+    values = []
     for line in file:
-        # Convertir chaque ligne en entier et l'ajouter à la liste
         values.append(int(line.strip()))
-    file.close()  # Fermer le fichier après lecture
-    return values    
+    file.close()
+    return values
+
 
 #############################################################################################################################
-# QUESTION 2 – Comptage des occurrences (Complexité O(n²))
-# Écrire une fonction nombre_occurrences(values_list) utilisant :
-# - une boucle imbriquée
-# - un dictionnaire pour stocker les occurrences
-#
-# QUESTION 3 – Analyse algorithmique
-# - Indiquer le nombre exact d’itérations
-# - Déterminer la complexité temporelle en notation O.
-# - Intégrer un chronomètre pour mesurer la durée d’exécution
+# QUESTION 2 & 3 – Comptage des occurrences O(n²) + analyse + chronométrage
 #############################################################################################################################
 
 def nombre_occurrences(values_list):
@@ -48,106 +36,157 @@ def nombre_occurrences(values_list):
             if values_list[j] == values_list[i]:
                 count += 1
             occurrences[values_list[i]] = count
-        
-        #               100% --> n
-        # elapsed_percentage --> i+1 => elapsed_percentage  = (i + 1) * 100 / n  
+
         elapsed_percentage   = (i + 1) * 100 / n
-        remaining_percentage = 100 - elapsed_percentage 
+        remaining_percentage = 100 - elapsed_percentage
 
         current_time = time.time()
         elapsed_time = current_time - start_time
 
-        if elapsed_percentage  > 0:
-            #    elapsed_time --> elapsed_percentage 
-            #  remaining_time --> remaining_percentage => remaining_time = remaining_percentage * elapsed_time / elapsed_percentage 
-            remaining_time = remaining_percentage * elapsed_time / elapsed_percentage 
-        
-        # Affiche la progression sur une seule ligne en écrasant l'affichage précédent.
-        # \r ramène le curseur au début de la ligne, sys.stdout.write écrit le texte sans retour à la ligne,
-        # et le formatage affiche le pourcentage, le temps écoulé et le temps restant estimé.
-        sys.stdout.write(f"\rProgress: {elapsed_percentage :.2f}%, Elapsed Time: {elapsed_time:.2f}s, RemainingTime: {remaining_time:.2f}s")
+        if elapsed_percentage > 0:
+            remaining_time = remaining_percentage * elapsed_time / elapsed_percentage
 
-        # Force l'affichage immédiat du texte (sinon Python peut attendre avant d'afficher).
-        sys.stdout.flush()  
+        sys.stdout.write(f"\rProgress: {elapsed_percentage:.2f}%, Elapsed Time: {elapsed_time:.2f}s, Remaining: {remaining_time:.2f}s")
+        sys.stdout.flush()
 
     end_time = time.time()
     print(f"\n⏱ Durée totale du comptage : {end_time - start_time:.5f} secondes")
     print(f"Nombre total d’itérations : {iterations}")
     return occurrences
-# fin nombre_occurrences
+
 
 #############################################################################################################################
-# QUESTION 4 – Amélioration du calcul des occurrences (Complexité O(n))
-# Écrire une fonction nombre_occurrences_ameliore(values_list)
-# Objectif : réduire la complexité de O(n²) → O(n)
+# QUESTION 4 – Version améliorée O(n)
 #############################################################################################################################
 
-# def nombre_occurrences_ameliore(values_list):
+def nombre_occurrences_ameliore(values_list):
+    start_time = time.time()
+    iterations = 0
+    occurrences = dict()
+
+    for value in values_list:
+        iterations += 1
+        if value in occurrences:
+            occurrences[value] += 1
+        else:
+            occurrences[value] = 1
+
+    end_time = time.time()
+
+    print("\n---- VERSION AMÉLIORÉE (O(n)) ----")
+    print(f"⏱ Durée totale : {end_time - start_time:.5f} sec")
+    print(f"Nombre d’itérations : {iterations}")
+    print("Complexité : O(n)")
+    return occurrences
 
 
 #############################################################################################################################
 # QUESTION 5 – Tri par sélection (Selection Sort)
-# Écrire une fonction selection_sort() qui :
-# - trie les éléments en ordre croissant
-# - indique le nombre exact d’itérations
-# - affiche la complexité 
-# - intègre un chronomètre
 #############################################################################################################################
 
-# def selection_sort():
+def selection_sort(values_list):
+    tab = values_list.copy()
+    n = len(tab)
+    iterations = 0
+    start_time = time.time()
+
+    for i in range(n):
+        min_index = i
+        for j in range(i + 1, n):
+            iterations += 1
+            if tab[j] < tab[min_index]:
+                min_index = j
+        tab[i], tab[min_index] = tab[min_index], tab[i]
+
+    end_time = time.time()
+
+    print("\n---- TRI PAR SÉLECTION ----")
+    print("Complexité : O(n²)")
+    print(f"Nombre d’itérations : {iterations}")
+    print(f"⏱ Durée : {end_time - start_time:.5f} sec")
+    return tab
 
 
 #############################################################################################################################
 # QUESTION 6 – Tri par fusion (Merge Sort)
-# Écrire une fonction merge_sort(tab) qui :
-# - trie les éléments en ordre croissant
-# - compte le nombre d’itérations
-# - affiche la complexité : O(n log n)
-# - intègre un chronomètre
 #############################################################################################################################
 
-# def merge_sort():
+merge_iterations = 0
+
+def merge(left, right):
+    global merge_iterations
+    result = []
+    i = j = 0
+
+    while i < len(left) and j < len(right):
+        merge_iterations += 1
+        if left[i] < right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+
+def merge_sort(tab):
+    global merge_iterations
+    merge_iterations = 0
+    start_time = time.time()
+
+    def divide(arr):
+        if len(arr) <= 1:
+            return arr
+        mid = len(arr) // 2
+        return merge(divide(arr[:mid]), divide(arr[mid:]))
+
+    sorted_tab = divide(tab)
+
+    end_time = time.time()
+
+    print("\n---- TRI PAR FUSION ----")
+    print("Complexité : O(n log n)")
+    print(f"Nombre d’itérations : {merge_iterations}")
+    print(f"⏱ Durée : {end_time - start_time:.5f} sec")
+
+    return sorted_tab
 
 
 #############################################################################################################################
 # QUESTION 7 – Sauvegarde du tableau trié
-# Écrire une fonction write_to_file(tab) qui enregistre les valeurs triées dans 
-# un fichier nommé valeurs_aleatoires_tries.txt
 #############################################################################################################################
 
-# def write_to_file():
+def write_to_file(tab):
+    with open("valeurs_aleatoires_tries.txt", "w") as f:
+        for value in tab:
+            f.write(str(value) + "\n")
+    print("\n📄 Fichier 'valeurs_aleatoires_tries.txt' enregistré avec succès.")
 
 
 #############################################################################################################################
-# Début du script principal
+# SCRIPT PRINCIPAL
 #############################################################################################################################
 
-# 1. Lecture du fichier
 valeurs_aleatoires_list = read_file('valeurs_aleatoires.txt')
-list_length = len(valeurs_aleatoires_list)
-n = len(valeurs_aleatoires_list) # n est utilisé dans nombre_occurrences
+n = len(valeurs_aleatoires_list)
 
-print('Valeurs lues :', valeurs_aleatoires_list[:10], '...')
-print('Longueur de la liste (n) :', n)
+print("Valeurs lues :", valeurs_aleatoires_list[:10], "...")
+print("Longueur de la liste :", n)
 
-# 2. & 3. Comptage des occurrences (O(n²))
+# QUESTION 2 & 3
 occurrences_on2 = nombre_occurrences(valeurs_aleatoires_list)
-# print("Occurrences (O(n²)) :", occurrences_on2)
 
-# 4. Comptage des occurrences amélioré (O(n))
+# QUESTION 4
 # occurrences_on = nombre_occurrences_ameliore(valeurs_aleatoires_list)
-# print("Occurrences (O(n)) :", occurrences_on)
 
-# 5. Tri par sélection (Selection Sort)
-# sorted_selection = selection_sort()
+# QUESTION 5
+# sorted_selection = selection_sort(valeurs_aleatoires_list)
 
-# 6. Tri par fusion (Merge Sort)
-# sorted_merge = merge_sort()
+# QUESTION 6
+# sorted_merge = merge_sort(valeurs_aleatoires_list)
 
-# 7. Sauvegarde du tableau trié
-# write_to_file()
-
-
-
-
-
+# QUESTION 7
+# write_to_file(sorted_merge)
